@@ -8,5 +8,5 @@
 - Push notification: Firebase Cloud Messaging (FCM) - a demo notification through from app and catch it via firebase service and showed as a notification.
 - Local database: Room
 - Video player: ExoPlayer
-- Handled the 5 minutes interval api via Flow
+- Handled the 5 minutes interval api call via Flow
 - Handled notification permission for Android 13 to up to date devices. 

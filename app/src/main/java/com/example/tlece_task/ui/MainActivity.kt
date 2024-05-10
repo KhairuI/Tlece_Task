@@ -1,5 +1,6 @@
 package com.example.tlece_task.ui
 
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -34,14 +35,19 @@ class MainActivity : BaseActivity() {
         videoAdapter = VideoAdapter()
 
         binding.listVideo.with(videoAdapter.apply {
-            clicked {
-
+            clicked { video ->
+                video.videoUrl?.let { url ->
+                    startActivity(VideoPlayActivity.getStartIntent(this@MainActivity, url))
+                }
             }
         })
+
+        binding.imgNotification.setOnClickListener { viewModel.sendNotification() }
 
         // get video list
         viewModel.getVideoList()
     }
+
 
     override fun observeViewModel() {
 
@@ -62,9 +68,30 @@ class MainActivity : BaseActivity() {
                             is Result.Loading -> {
                                 loading(result.isLoading)
                             }
+
                             is Result.Success -> {
                                 parseData(result.data)
                             }
+                        }
+                    }
+                }
+
+                launch {
+                    viewModel.sendNotificationResponse.collect { result ->
+                        when (result) {
+                            is Result.Error -> {
+                                Log.d("xxx", "Error: ${result.error}")
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    result.error,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+
+                            }
+
+                            is Result.Loading -> {}
+
+                            is Result.Success -> {}
                         }
                     }
                 }

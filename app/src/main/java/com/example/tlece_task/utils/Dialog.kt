@@ -17,7 +17,6 @@ fun Dialog?.fullscreen() = this?.window?.apply {
 }
 
 fun Dialog?.wrap() = this?.window?.apply {
-    setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
     setLayout(
         /* width = */ 9 * context.resources.displayMetrics.widthPixels / 10,
         /* height = */ WindowManager.LayoutParams.WRAP_CONTENT

@@ -6,8 +6,13 @@ import androidx.annotation.RequiresApi
 import com.example.tlece_task.R
 import com.example.tlece_task.database.VideoRepo
 import com.example.tlece_task.di.IoDispatcher
+import com.example.tlece_task.model.NotificationModel
+import com.example.tlece_task.model.NotificationRequest
+import com.example.tlece_task.model.NotificationResponse
 import com.example.tlece_task.model.VideoModel
 import com.example.tlece_task.network.ApiService
+import com.example.tlece_task.network.FCMApiService
+import com.example.tlece_task.utils.DataSourceUtils
 import com.example.tlece_task.utils.Result
 import com.example.tlece_task.utils.isNetworkConnected
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -23,13 +28,15 @@ import javax.inject.Inject
 
 interface VideoDataSource {
     suspend fun getVideoList(): Flow<Result<VideoModel>>
+    suspend fun sendNotification(): Flow<Result<NotificationResponse>>
 }
 
 class VideoDataSourceImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val videoRepo: VideoRepo,
-    private val apiService: ApiService
+    private val apiService: ApiService,
+    private val fcmApiService: FCMApiService
 ) : VideoDataSource {
 
     private fun hasInternetConnection(): Boolean = context.isNetworkConnected()
@@ -68,8 +75,40 @@ class VideoDataSourceImpl @Inject constructor(
             }
 
             isFirstTime = false
-            delay(Duration.ofMillis(3000))
+            delay(Duration.ofMinutes(5))
         }
 
     }.flowOn(ioDispatcher)
+
+    override suspend fun sendNotification(): Flow<Result<NotificationResponse>> = flow {
+        try {
+            // emit(Result.Loading())
+
+            if (!hasInternetConnection()) {
+                emit(Result.Error(context.getString(R.string.no_internet)))
+                return@flow
+            }
+
+            val request = NotificationRequest(
+                to = DataSourceUtils.getToken(context),
+                notification = NotificationModel(body = "Hi there, greetings from Tlece", title = "Tlece")
+            )
+
+            val response = fcmApiService.sendNotification(request)
+            if (!response.isSuccessful) {
+                emit(Result.Error(response.errorBody().toString()))
+                return@flow
+            }
+
+            response.body()?.let { data ->
+                emit(Result.Success(data))
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emit(Result.Error(e.toString()))
+        } finally {
+            emit(Result.Loading(false))
+        }
+    }.flowOn(ioDispatcher)
+
 }

@@ -5,3 +5,7 @@
 - Networking library: Retrofit
 - Dependency Injection: Hilt
 - UI design: XML
+- Push notification: Firebase Cloud Messaging (FCM) - a demo notification through from app and catch it via firebase service and showed as a notification.
+- Local database: Room
+- Video player: ExoPlayer
+- Handled the 5 minutes interval api via Flow

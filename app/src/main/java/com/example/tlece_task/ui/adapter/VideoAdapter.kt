@@ -46,7 +46,7 @@ class VideoAdapter : ListAdapter<VideoModelItem, BaseViewHolder>(DiffCallback) {
         }
     }
 
-    fun clicked(clicked: (type: VideoModelItem) -> Unit) {
+    fun clicked(clicked: (video: VideoModelItem) -> Unit) {
         this.clicked = clicked
     }
 

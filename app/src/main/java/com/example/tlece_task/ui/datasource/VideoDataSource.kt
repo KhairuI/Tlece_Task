@@ -1,18 +1,24 @@
 package com.example.tlece_task.ui.datasource
 
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.example.tlece_task.R
 import com.example.tlece_task.database.VideoRepo
 import com.example.tlece_task.di.IoDispatcher
 import com.example.tlece_task.model.VideoModel
 import com.example.tlece_task.network.ApiService
+import com.example.tlece_task.utils.Result
 import com.example.tlece_task.utils.isNetworkConnected
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import com.example.tlece_task.utils.Result
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.time.delay
+import java.time.Duration
 import javax.inject.Inject
 
 interface VideoDataSource {
@@ -28,31 +34,42 @@ class VideoDataSourceImpl @Inject constructor(
 
     private fun hasInternetConnection(): Boolean = context.isNetworkConnected()
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun getVideoList(): Flow<Result<VideoModel>> = flow {
-        try {
-            emit(Result.Loading())
+        var isFirstTime = true
 
-            if (!hasInternetConnection()) {
-                emit(Result.Error(context.getString(R.string.no_internet)))
-                return@flow
+        while (currentCoroutineContext().isActive) {
+
+            try {
+                if (isFirstTime) emit(Result.Loading())
+
+                if (!hasInternetConnection()) {
+                    emit(Result.Error(context.getString(R.string.no_internet)))
+                    return@flow
+                }
+
+                val response = apiService.videoApiCall()
+                if (!response.isSuccessful) {
+                    emit(Result.Error(response.errorBody().toString()))
+                    return@flow
+
+                }
+
+                response.body()?.let {
+                    videoRepo.insert(it)
+                    if (isFirstTime) emit(Result.Success(it))
+                }
+
+
+            } catch (e: Exception) {
+                emit(Result.Error(e.toString()))
+            } finally {
+                emit(Result.Loading(false))
             }
 
-            val response = apiService.videoApiCall()
-            if (!response.isSuccessful) {
-                emit(Result.Error(response.errorBody().toString()))
-                return@flow
-
-            }
-
-            response.body()?.let {
-                videoRepo.insert(it)
-                emit(Result.Success(it))
-            }
-
-        } catch (e: Exception) {
-            emit(Result.Error(e.toString()))
-        } finally {
-            emit(Result.Loading(false))
+            isFirstTime = false
+            delay(Duration.ofMillis(3000))
         }
+
     }.flowOn(ioDispatcher)
 }

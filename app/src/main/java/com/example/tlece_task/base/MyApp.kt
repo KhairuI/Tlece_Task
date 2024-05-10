@@ -1,7 +1,6 @@
 package com.example.tlece_task.base
 
 import android.app.Application
-import android.util.Log
 import com.example.tlece_task.utils.DataSourceUtils
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
@@ -19,7 +18,6 @@ class MyApp : Application() {
             }
             task.result?.let { token ->
                 DataSourceUtils.setToken(applicationContext, token)
-                Log.d("xxx", "onCreate: $token")
             }
         })
 

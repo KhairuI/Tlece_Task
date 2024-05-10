@@ -7,6 +7,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.scalars.ScalarsConverterFactory
 import javax.inject.Inject
 
 class ApiServiceHelper @Inject constructor() {
@@ -15,17 +16,8 @@ class ApiServiceHelper @Inject constructor() {
 
         val retrofit = Retrofit.Builder()
             .baseUrl(ApiEndPoint.BASE_URL)
-            .client(
-                OkHttpClient.Builder().also { client ->
-                    if (BuildConfig.DEBUG) {
-                        val logging = HttpLoggingInterceptor().also {
-                            it.level = HttpLoggingInterceptor.Level.BODY
-                        }
-                        client.addInterceptor(logging)
-                    }
-                }.build()
-            )
             .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(ScalarsConverterFactory.create())
             .build()
         return retrofit.create(ApiService::class.java)
     }

@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.tlece_task"
-        minSdk = 24
+        minSdk = 21
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -94,5 +94,8 @@ dependencies {
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.exoplayer.dash)
     implementation(libs.androidx.media3.ui)
+
+    // Toasty
+    implementation(libs.toasty)
 
 }

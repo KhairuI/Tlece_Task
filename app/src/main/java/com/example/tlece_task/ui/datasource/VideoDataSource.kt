@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.example.tlece_task.R
+import com.example.tlece_task.base.helper.NetworkHandlerDataSource
 import com.example.tlece_task.database.VideoRepo
 import com.example.tlece_task.di.IoDispatcher
 import com.example.tlece_task.model.NotificationModel
@@ -14,7 +15,8 @@ import com.example.tlece_task.network.ApiService
 import com.example.tlece_task.network.FCMApiService
 import com.example.tlece_task.utils.DataSourceUtils
 import com.example.tlece_task.utils.Result
-import com.example.tlece_task.utils.isNetworkConnected
+import com.example.tlece_task.utils.UiText
+import com.example.tlece_task.utils.extension.isNetworkConnected
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.currentCoroutineContext
@@ -36,7 +38,8 @@ class VideoDataSourceImpl @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val videoRepo: VideoRepo,
     private val apiService: ApiService,
-    private val fcmApiService: FCMApiService
+    private val fcmApiService: FCMApiService,
+    private val networkHandlerDataSource: NetworkHandlerDataSource
 ) : VideoDataSource {
 
     private fun hasInternetConnection(): Boolean = context.isNetworkConnected()
@@ -51,13 +54,13 @@ class VideoDataSourceImpl @Inject constructor(
                 if (isFirstTime) emit(Result.Loading())
 
                 if (!hasInternetConnection()) {
-                    emit(Result.Error(context.getString(R.string.no_internet)))
+                    emit(Result.Error(UiText.StringResource(R.string.no_internet)))
                     return@flow
                 }
 
                 val response = apiService.videoApiCall()
                 if (!response.isSuccessful) {
-                    emit(Result.Error(response.errorBody().toString()))
+                    emit(Result.Error(UiText.DynamicString(response.errorBody().toString())))
                     return@flow
 
                 }
@@ -69,7 +72,7 @@ class VideoDataSourceImpl @Inject constructor(
 
 
             } catch (e: Exception) {
-                emit(Result.Error(e.toString()))
+                emit(Result.Error(networkHandlerDataSource.handleException(e)))
             } finally {
                 emit(Result.Loading(false))
             }
@@ -82,21 +85,24 @@ class VideoDataSourceImpl @Inject constructor(
 
     override suspend fun sendNotification(): Flow<Result<NotificationResponse>> = flow {
         try {
-            // emit(Result.Loading())
+            emit(Result.Loading())
 
             if (!hasInternetConnection()) {
-                emit(Result.Error(context.getString(R.string.no_internet)))
+                emit(Result.Error(UiText.StringResource(R.string.no_internet)))
                 return@flow
             }
 
             val request = NotificationRequest(
                 to = DataSourceUtils.getToken(context),
-                notification = NotificationModel(body = "Hi there, greetings from Tlece", title = "Tlece")
+                notification = NotificationModel(
+                    body = "Hi there, greetings from Tlece",
+                    title = "Tlece"
+                )
             )
 
             val response = fcmApiService.sendNotification(request)
             if (!response.isSuccessful) {
-                emit(Result.Error(response.errorBody().toString()))
+                emit(Result.Error(UiText.DynamicString(response.errorBody().toString())))
                 return@flow
             }
 
@@ -104,8 +110,7 @@ class VideoDataSourceImpl @Inject constructor(
                 emit(Result.Success(data))
             }
         } catch (e: Exception) {
-            e.printStackTrace()
-            emit(Result.Error(e.toString()))
+            emit(Result.Error(networkHandlerDataSource.handleException(e)))
         } finally {
             emit(Result.Loading(false))
         }

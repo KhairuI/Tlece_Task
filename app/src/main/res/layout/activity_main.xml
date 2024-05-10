@@ -67,6 +67,19 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvNoData"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/no_data"
+        android:textColor="@color/text_color"
+        android:textSize="14sp"
+        android:gravity="center_horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 
 
 

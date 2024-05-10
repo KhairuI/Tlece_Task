@@ -14,7 +14,6 @@ import com.example.tlece_task.R
 
 object NotificationHelper {
 
-    private const val requestCode = 1
     private const val channelName = "Push Notification"
     private const val notifyId = 0
 

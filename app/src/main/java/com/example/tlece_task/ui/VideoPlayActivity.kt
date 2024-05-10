@@ -3,10 +3,12 @@ package com.example.tlece_task.ui
 import android.content.Context
 import android.content.Intent
 import android.view.View
-import android.widget.Toast
 import androidx.media3.exoplayer.ExoPlayer
+import com.example.tlece_task.R
 import com.example.tlece_task.base.BaseActivity
 import com.example.tlece_task.databinding.ActivityVideoPlayBinding
+import com.example.tlece_task.utils.UiText
+import com.example.tlece_task.utils.extension.error
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -41,7 +43,7 @@ class VideoPlayActivity : BaseActivity() {
         }
 
         if (url == "") {
-            Toast.makeText(this,"Unable to play this video",Toast.LENGTH_SHORT).show()
+            error(UiText.StringResource(R.string.unable))
         } else {
 
             val mediaItem = androidx.media3.common.MediaItem.fromUri(url)

@@ -1,4 +1,4 @@
-package com.example.tlece_task.utils
+package com.example.tlece_task.utils.extension
 
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager

@@ -9,4 +9,5 @@ object AppConstants {
     internal const val DB_VERSION = 1
 
 
+
 }

@@ -4,7 +4,7 @@ import android.app.Dialog
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import com.example.tlece_task.utils.hideProgress
+import com.example.tlece_task.utils.extension.hideProgress
 
 abstract class BaseActivity : AppCompatActivity() {
 

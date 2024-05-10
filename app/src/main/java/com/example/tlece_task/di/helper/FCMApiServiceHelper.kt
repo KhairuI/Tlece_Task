@@ -1,13 +1,11 @@
 package com.example.tlece_task.di.helper
 
-import com.example.tlece_task.BuildConfig
 import com.example.tlece_task.network.ApiEndPoint
-import com.example.tlece_task.network.ApiService
 import com.example.tlece_task.network.FCMApiService
 import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.scalars.ScalarsConverterFactory
 import javax.inject.Inject
 
 class FCMApiServiceHelper @Inject constructor() {
@@ -16,18 +14,20 @@ class FCMApiServiceHelper @Inject constructor() {
 
         val retrofit = Retrofit.Builder()
             .baseUrl(ApiEndPoint.FCM_URL)
-            .client(
-                OkHttpClient.Builder().also { client ->
-                    if (BuildConfig.DEBUG) {
-                        val logging = HttpLoggingInterceptor().also {
-                            it.level = HttpLoggingInterceptor.Level.BODY
-                        }
-                        client.addInterceptor(logging)
-                    }
-                }.build()
-            )
+            .client(client())
+            .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         return retrofit.create(FCMApiService::class.java)
+    }
+
+    private fun client(): OkHttpClient = with(OkHttpClient().newBuilder()) {
+        addInterceptor { chain ->
+            val modifiedRequest = chain.request().newBuilder()
+                .addHeader(ApiEndPoint.AUTHORIZATION, ApiEndPoint.AUTHORIZATION_VALUE)
+                .addHeader(ApiEndPoint.CONTENT_TYPE, ApiEndPoint.APPLICATION_JSON).build()
+            chain.proceed(modifiedRequest)
+        }
+        build()
     }
 }
